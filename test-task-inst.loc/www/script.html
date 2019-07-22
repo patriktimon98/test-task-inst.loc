@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.9.1.js"></script>
+</head>
+
+<style>
+    img {
+        width: 100px;
+        height: auto;
+    }
+</style>
+
+<body>
+
+<table>
+    <tr>
+        <td>
+            <input type="text" id="first" value="#cat" placeholder="#tag">
+        </td>
+        <td><input type="text" id="second" value="#dog" placeholder="#tag"></td>
+        <td>
+            <button id="buttonReload">Reload photos</button>
+            <button id="buttonSave">Save</button>
+        </td>
+        <td>
+            <button id="buttonOpen">Open images</button>
+        </td>
+    </tr>
+    <tr>
+        <td id="firstTable"></td>
+        <td id="secondTable"></td>
+        <td id="unionTable"></td>
+    </tr>
+</table>
+
+</body>
+
+<script>
+    window.onload = function () {
+        var imageData = new FormData();
+        imageData.append('image', 'cat');
+
+        $.ajax({
+            url: 'getImages.php',
+            type: 'POST',
+            dataType: 'json',
+            data: imageData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                $("#firstTable").html("");
+                var $table = "";
+                for (var i = 0; i < 30; i++) {
+                    $table += '<img src="' + data[i] + '" alt="picture">';
+                }
+                $("#firstTable").html($table);
+            }
+        });
+
+        imageData.append('image', 'dog');
+
+        $.ajax({
+            url: 'getImages.php',
+            type: 'POST',
+            dataType: 'json',
+            data: imageData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                $("#secondTable").html("");
+                var $table = "";
+                for (var i = 0; i < 30; i++) {
+                    $table += '<img src="' + data[i] + '" alt="picture">';
+                }
+                $("#secondTable").html($table);
+            }
+        });
+    };
+
+    $(document).ready(function () {
+        var $forSave = '';
+
+        var imageData = new FormData();
+        imageData.append('first', 'cat');
+        imageData.append('second', 'dog');
+
+        $.ajax({
+            url: 'getUnion.php',
+            type: 'POST',
+            dataType: 'json',
+            data: imageData,
+            processData: false,
+            contentType: false,
+            success: function (data) {
+                $forSave = data;
+
+                $("#unionTable").html("");
+                var $table = "";
+                for (var i = 0; i < 30; i++) {
+                    if (data[i])
+                        $table += '<img src="' + data[i] + '" alt="picture">';
+                }
+                $("#unionTable").html($table);
+            }
+        });
+
+        $("#first").change(function () {
+            var imageData = new FormData();
+
+            var $image = $("#first").val();
+            imageData.append('image', $image);
+
+            $.ajax({
+                url: 'getImages.php',
+                type: 'POST',
+                dataType: 'json',
+                data: imageData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    $("#firstTable").html("");
+                    var $table = "";
+                    for (var i = 0; i < 30; i++)
+                        $table += '<img src="' + data[i] + '" alt="picture">';
+
+                    $("#firstTable").html($table);
+                }
+            });
+        });
+
+        $("#second").change(function () {
+            var imageData = new FormData();
+
+            var $image = $("#second").val();
+            imageData.append('image', $image);
+
+            $.ajax({
+                url: 'getImages.php',
+                type: 'POST',
+                dataType: 'json',
+                data: imageData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    $("#secondTable").html("");
+                    var $table = "";
+                    for (var i = 0; i < 30; i++)
+                        $table += '<img src="' + data[i] + '" alt="picture">';
+
+                    $("#secondTable").html($table);
+                }
+            });
+        });
+
+        $("#buttonReload").on('click', function () {
+            var imageData = new FormData();
+
+            var $first = $("#first").val();
+            var $second = $("#second").val();
+            imageData.append('first', $first);
+            imageData.append('second', $second);
+
+            $.ajax({
+                url: 'getUnion.php',
+                type: 'POST',
+                dataType: 'json',
+                data: imageData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    $forSave = data;
+
+                    $("#unionTable").html("");
+                    var $table = "";
+                    for (var i = 0; i < 30; i++) {
+                        if (data[i])
+                            $table += '<img src="' + data[i] + '" alt="picture">';
+                    }
+                    $("#unionTable").html($table);
+                }
+            });
+        });
+
+        $("#buttonSave").on('click', function () {
+            $.ajax({
+                url: 'save.php',
+                type: 'POST',
+                dataType: 'json',
+                data: JSON.stringify($forSave),
+                contentType: 'application/json; charset=utf-8',
+                complete: function (data) {
+                    $forSave = '';
+                    $("#unionTable").html("");
+                }
+            });
+        });
+
+        $("#buttonOpen").on('click', function () {
+            window.open('open.php', '_blank');
+        });
+    });
+</script>
+
+</html>
